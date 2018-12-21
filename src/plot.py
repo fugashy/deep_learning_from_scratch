@@ -4,7 +4,7 @@ import matplotlib.pylab as plt
 import src.differentiation
 
 
-def y(ys, y_max=1.1, y_min=-0.1):
+def y(ys, y_max=1.1, y_min=-0.1, label=None):
     if type(ys) is not list:
         print('input should be list of float')
         return
@@ -19,6 +19,10 @@ def y(ys, y_max=1.1, y_min=-0.1):
         plt.plot(ys)
 
     plt.ylim(y_min, y_max)
+
+    if label is not None and type(label) is tuple:
+        plt.xlabel(label[0])
+        plt.ylabel(label[1])
     plt.show()
 
 
