@@ -1,40 +1,25 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import sys, os
-sys.path.append(os.pardir)
+import pathlib
+p = pathlib.Path(os.path.dirname(__file__) + '/..')
+root_dir_path = str(p.resolve())
+sys.path.append(root_dir_path)
 import numpy as np
 import src.mnist as mnist
 import src.nn as nn
 import src.optimizer as optimizer
 
-
-def check_gradient():
-    (x_train, t_train), _ = mnist.load_mnist(normalize=True, one_hot_label=True)
-    x_batch = x_train[:3]
-    t_batch = t_train[:3]
-
-    network = nn.TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
-
-    grad_numerical = network.numerical_gradient(x_batch, t_batch)
-    grad_backprop = network.gradient(x_batch, t_batch)
-
-    for key in grad_numerical.keys():
-        print(str(np.average(np.abs(grad_backprop[key]))) + ' - ' + str(np.average(np.abs(grad_numerical[key]))))
-        diff = np.average(np.abs(grad_backprop[key] - grad_numerical[key]))
-        print(key + ':' + str(diff))
+import yaml
 
 
-def create_neural_net(hidden_layer_num=1, hidden_size=50):
-    hidden_size_list = [hidden_size for i in range(hidden_layer_num + 1)]
-    return nn.MultiLayerNet(784, hidden_size_list, 10)
+if __name__ == '__main__':
+    fd = open(root_dir_path + '/config/train.yaml')
+    yaml_node = yaml.load(fd)
 
+    network = nn.create_multilayer_network(yaml_node['neural_network'])
+    opt = optimizer.create(yaml_node['optimizer'])
 
-def train_neural_net(network, iter_num=10000, batch_size=100, lr=0.1):
-    u"""
-    Args:
-        iter_num: 総ループ数(int)
-        batch_size: 1エポックあたりのデータ数(int)
-        lr: 学習係数(float)
-    """
     (x_train, t_train), (x_test, t_test) = mnist.load_mnist(one_hot_label=True)
 
     # 画像枚数
@@ -44,11 +29,9 @@ def train_neural_net(network, iter_num=10000, batch_size=100, lr=0.1):
     train_acc_list = []
     test_acc_list = []
 
+    iter_num = yaml_node['train']['iter_num']
+    batch_size = yaml_node['train']['batch_size']
     iter_per_epoch = max(train_size / batch_size, 1)
-
-    # パラメータ更新器
-    param_optimizer = optimizer.AdaGrad()
-
     for i in range(iter_num):
         # 全データからランダムでバッチサイズ分のデータを得る
         batch_mask = np.random.choice(train_size, batch_size)
@@ -61,7 +44,7 @@ def train_neural_net(network, iter_num=10000, batch_size=100, lr=0.1):
         # ネットワークの重みを更新する
         # 参照渡しのため、networkのメンバが更新される
         params = network.params
-        param_optimizer.update(params, grad)
+        opt.update(params, grad)
 
         # 順方向の処理を走らせてエラーを得る
         loss = network.loss(x_batch, t_batch)
@@ -76,4 +59,7 @@ def train_neural_net(network, iter_num=10000, batch_size=100, lr=0.1):
             print('batch num: {0}\n\ttrain_acc: {1}, test_acc:{2}'.format(
                 i / iter_per_epoch, train_acc, test_acc))
 
-    return train_loss_list, train_acc_list, test_acc_list
+    if yaml_node['plot']:
+        import src.plot as plot
+        plot.y([train_acc_list, test_acc_list], label=('accuracy', 'epoch'))
+        plot.y(train_loss_list, label=('loss', 'iter num'))

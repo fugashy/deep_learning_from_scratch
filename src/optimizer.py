@@ -3,6 +3,24 @@ import sys, os
 sys.path.append(os.pardir)
 import numpy as np
 
+def create(config_dict):
+    if config_dict['type'] == 'sgd':
+        lr = config_dict['learning_rate']
+        return StochasticGradientDescent(lr=lr)
+    elif config_dict['type'] == 'momentum_sgd':
+        lr = config_dict['learning_rate']
+        momentum = config_dict['momentum']
+        return Momentum(lr=lr, momentum=momentum)
+    elif config_dict['type'] == 'adagrad':
+        lr = config_dict['learning_rate']
+        return AdaGrad(lr=lr)
+    elif config_dict['type'] == 'adam':
+        lr = config_dict['learning_rate']
+        beta1 = config_dict['beta1']
+        beta2 = config_dict['beta2']
+        return Adam(lr=lr, beta1=beta1, beta2=beta2)
+
+
 
 class StochasticGradientDescent:
     u"""
