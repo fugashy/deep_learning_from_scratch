@@ -350,3 +350,19 @@ class MultiLayerNet:
             grads['b' + str(idx)] = self.layers['Affine' + str(idx)].db
 
         return grads
+
+def create_multilayer_network(config_dict):
+    input_size = config_dict['input_size']
+    output_size = config_dict['output_size']
+    hidden_layer_num = config_dict['hidden_layer_num']
+    hidden_size = config_dict['hidden_size']
+    activation = config_dict['activation']
+    weight_init_std = config_dict['weight_init_std']
+    weight_decay_lambda = config_dict['weight_decay_lambda']
+
+    hidden_size_list = [hidden_size for i in range(hidden_layer_num + 1)]
+
+    return MultiLayerNet(
+            input_size, hidden_size_list, output_size,
+            activation=activation, weight_init_std=weight_init_std,
+            weight_decay_lambda=weight_decay_lambda)

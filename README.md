@@ -25,14 +25,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ```bash
 cd deep_learning_from_scratch
 
-ipython3
-
-from src import operate, plot
-
-network = operate.create_neural_net()
-train_loss_list, train_acc_list, test_acc_list = operate.train_neural_net(network)
-plot.y([train_acc_list, test_acc_list], label=('accuracy', 'epoch'))
-plot.y(train_loss_list, label=('loss', 'iter num'))
+./script/train
 ```
+
+To change parameter edit config/train.yaml
+
 ![acc_vs_epoch](result/acc_vs_epoch.png "acc_vs_epoch")
 ![loss_vs_iter_num](result/loss_vs_iter_num.png "loss_vs_iter_num")
