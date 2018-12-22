@@ -164,3 +164,189 @@ class TwoLayerNet:
         grads['W2'], grads['b2'] = self.layers['Affine2'].dW, self.layers['Affine2'].db
 
         return grads
+
+class MultiLayerNet:
+    u"""
+    任意の層を持つニューラルネットワーク
+    """
+    def __init__(
+            self, input_size, hidden_size_list, output_size,
+            activation='relu', weight_init_std=0.01, weight_decay_lambda=0):
+        u"""
+        Args:
+            input_size:          入力層の入力要素数(int)
+                                 ex) 画像の画素数
+            hidden_size_list:    隠れ層のサイズのリスト(list of int)
+                                 この数が層の深さを規定する
+            output_size:         出力層の出力要素数(int)
+                                 ex) mnistの場合は10種の分類問題なので10
+            activation:          活性化関数(str)
+                                 relu or sigmoid
+            weight_init_std:     重み初期化時の標準偏差(float or str)
+                                 relu or he or sigmoid or xavier or float value
+            weight_decay_lambda: Weight Decay(L2ノルム)の強さ(int)
+        """
+        self.input_size = input_size
+        self.output_size = output_size
+        self.hidden_size_list = hidden_size_list
+        self.hidden_layer_num = len(hidden_size_list)
+        self.weight_decay_lambda = weight_decay_lambda
+
+        self.params = {}
+
+        self.__init_weight(weight_init_std)
+
+        act_layers = {'sigmoid': src.layer.Sigmoid,
+                      'relu': src.layer.Relu}
+        self.layers = OrderedDict()
+        # AffineLayerとActivationLayerを隠れ層の数だけ追加する
+        for idx in range(1, self.hidden_layer_num + 1):
+            # 初期化しておいたパラメータで作る
+            self.layers['Affine' + str(idx)] = \
+                    src.layer.Affine(self.params['W' + str(idx)],
+                                     self.params['b' + str(idx)])
+            self.layers['Activation_function' + str(idx)] = \
+                    act_layers[activation]()
+
+        # 出力層の前の層
+        idx = self.hidden_layer_num + 1
+        self.layers['Affine' + str(idx)] = \
+                src.layer.Affine(self.params['W' + str(idx)],
+                                 self.params['b' + str(idx)])
+
+        # 出力層
+        self.last_layer = src.layer.SoftmaxWithLoss()
+
+    def __init_weight(self, weight_init_std):
+        u"""
+        重みの初期化を行う
+
+        Args:
+            weight_init_std: 重みの標準偏差(float)
+        """
+        # 配列の結合
+        all_size_list = [self.input_size] + self.hidden_size_list + [self.output_size]
+
+        # 層の数だけループ
+        for idx in range(1, len(all_size_list)):
+            scale = weight_init_std
+            if str(weight_init_std).lower() in ('relu', 'he'):
+                # ReLUを使う場合に推奨される初期値
+                scale = np.sqrt(2.0 / all_size_list[idx - 1])
+            elif str(weight_init_std).lower() in ('sigmoid', 'xavier'):
+                # sigmoidを使う場合に推奨される初期値
+                scale = np.sqrt(1.0 / all_size_list[idx - 1])
+
+            W = np.random.randn(all_size_list[idx - 1], all_size_list[idx])
+            self.params['W' + str(idx)] = scale * W
+
+            self.params['b' + str(idx)] = np.zeros(all_size_list[idx])
+
+    def predict(self, x):
+        u"""
+        順方向の計算(出力層を除く)
+
+        Args:
+            x: データ(np.array)
+
+        Returns:
+            推論結果(np.array)
+        """
+        # 出力層以外の順方向計算を行う
+        for layer in self.layers.values():
+            x = layer.forward(x)
+
+        return x
+
+    def loss(self, x, t):
+        u"""
+        順方向の計算を走らせて誤差を求める
+        また、荷重減衰も行う
+            過学習抑制のために昔からよく用いられる
+            大きな重みへペナルティを課す考え方
+            （重みが大きくなる時、よく過学習となるため）
+            見かけ上の重みを増やすため、重みのL2ノルムを加えて損失を求める
+
+        Args:
+            x: データ(np.array)
+            t: 教師データ(np.array)
+
+        Returns:
+            エラーベクトル(np.array)
+        """
+        # 出力層を除く順方向の計算を行う
+        y = self.predict(x)
+
+        # 荷重減衰
+        weight_decay = 0
+        for idx in range(1, self.hidden_layer_num + 2):
+            W = self.params['W' + str(idx)]
+            weight_decay += 0.5 * self.weight_decay_lambda * np.sum(W ** 2)
+
+        return self.last_layer.forward(y, t) + weight_decay
+
+    def accuracy(self, x, t):
+        u"""
+        精度を求める
+
+        Args:
+            x: データ(np.array)
+            t: 教師データ(np.array)
+
+        Returns:
+            推定値が教師データと一致している割合
+        """
+        # 順方向の処理を一回走らせる
+        # 出力層は覗いているが、最大値を見たいだけなので気にしなくてOK
+        y = self.predict(x)
+        y = np.argmax(y, axis=1)
+        if t.ndim != 1 :
+            t = np.argmax(t, axis=1)
+
+        return np.sum(y == t) / float(x.shape[0])
+
+    def numerical_gradient(self, x, t):
+        loss_W = lambda W: self.loss(x, t)
+
+        grads = {}
+        for idx in range(1, self.hidden_layer_num+2):
+            grads['W' + str(idx)] = src.differentiation.numerical_gradient(
+                    loss_W, self.params['W' + str(idx)])
+            grads['b' + str(idx)] = src.differentiation.numerical_gradient(
+                    loss_W, self.params['b' + str(idx)])
+
+        return grads
+
+    def gradient(self, x, t):
+        u"""
+        誤差逆伝搬法によって勾配を求める
+
+        Args:
+            x: データ(np.array)
+            t: 教師データ(np.array)
+
+        Returns:
+            重み・バイアスの勾配(dict of np.array)
+        """
+        # 順方向の計算を行う
+        self.loss(x, t)
+
+        # 微小値について、出力層の逆伝搬処理
+        dout = 1
+        dout = self.last_layer.backward(dout)
+
+        # 層の順番を反転・逆伝搬
+        layers = list(self.layers.values())
+        layers.reverse()
+        for layer in layers:
+            dout = layer.backward(dout)
+
+        # 重み・バイアスの勾配を取り出す
+        grads = {}
+        for idx in range(1, self.hidden_layer_num + 2):
+            W = self.layers['Affine' + str(idx)].dW + \
+                self.weight_decay_lambda * self.layers['Affine' + str(idx)].W
+            grads['W' + str(idx)] = W
+            grads['b' + str(idx)] = self.layers['Affine' + str(idx)].db
+
+        return grads
