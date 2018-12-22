@@ -68,17 +68,50 @@ class TwoLayerNet:
 
 
     def predict(self, x):
+        u"""
+        順方向の計算(出力層を除く)
+
+        Args:
+            x: データ(np.array)
+
+        Returns:
+            推論結果(np.array)
+        """
+        # 出力層以外の順方向計算を行う
         for layer in self.layers.values():
             x = layer.forward(x)
 
         return x
 
     def loss(self, x, t):
+        u"""
+        順方向の計算を走らせて誤差を求める
+
+        Args:
+            x: データ(np.array)
+            t: 教師データ(np.array)
+
+        Returns:
+            エラーベクトル(np.array)
+        """
+        # 出力層を除く順方向の計算を行う
         y = self.predict(x)
 
         return self.last_layer.forward(y, t)
 
     def accuracy(self, x, t):
+        u"""
+        精度を求める
+
+        Args:
+            x: データ(np.array)
+            t: 教師データ(np.array)
+
+        Returns:
+            推定値が教師データと一致している割合
+        """
+        # 順方向の処理を一回走らせる
+        # 出力層は覗いているが、最大値を見たいだけなので気にしなくてOK
         y = self.predict(x)
         y = np.argmax(y, axis=1)
         if t.ndim != 1 :
@@ -102,15 +135,30 @@ class TwoLayerNet:
         return grads
 
     def gradient(self, x, t):
+        u"""
+        誤差逆伝搬法によって勾配を求める
+
+        Args:
+            x: データ(np.array)
+            t: 教師データ(np.array)
+
+        Returns:
+            重み・バイアスの勾配(dict of np.array)
+        """
+        # 順方向の計算を行う
         self.loss(x, t)
+
+        # 微小値について、出力層の逆伝搬処理
         dout = 1
         dout = self.last_layer.backward(dout)
 
+        # 層の順番を反転・逆伝搬
         layers = list(self.layers.values())
         layers.reverse()
         for layer in layers:
             dout = layer.backward(dout)
 
+        # 重み・バイアスの勾配を取り出す
         grads = {}
         grads['W1'], grads['b1'] = self.layers['Affine1'].dW, self.layers['Affine1'].db
         grads['W2'], grads['b2'] = self.layers['Affine2'].dW, self.layers['Affine2'].db
