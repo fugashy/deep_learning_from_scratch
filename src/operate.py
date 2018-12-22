@@ -23,7 +23,12 @@ def check_gradient():
         print(key + ':' + str(diff))
 
 
-def train_neural_net(iter_num=10000, batch_size=100, lr=0.1):
+def create_neural_net(hidden_layer_num=1, hidden_size=50):
+    hidden_size_list = [hidden_size for i in range(hidden_layer_num + 1)]
+    return nn.MultiLayerNet(784, hidden_size_list, 10)
+
+
+def train_neural_net(network, iter_num=10000, batch_size=100, lr=0.1):
     u"""
     Args:
         iter_num: 総ループ数(int)
@@ -41,12 +46,8 @@ def train_neural_net(iter_num=10000, batch_size=100, lr=0.1):
 
     iter_per_epoch = max(train_size / batch_size, 1)
 
-    # ネットワークの定義
-    network = nn.TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
-
     # パラメータ更新器
     param_optimizer = optimizer.AdaGrad()
-
 
     for i in range(iter_num):
         # 全データからランダムでバッチサイズ分のデータを得る
