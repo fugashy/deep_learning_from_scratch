@@ -29,7 +29,8 @@ ipython3
 
 from src import operate, plot
 
-train_loss_list, train_acc_list, test_acc_list = operate.train_neural_net()
+network = operate.create_neural_net()
+train_loss_list, train_acc_list, test_acc_list = operate.train_neural_net(network)
 plot.y([train_acc_list, test_acc_list], label=('accuracy', 'epoch'))
 plot.y(train_loss_list, label=('loss', 'iter num'))
 ```
