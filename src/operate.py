@@ -23,10 +23,16 @@ def check_gradient():
         print(key + ':' + str(diff))
 
 
-def train_neural_net(
-        iter_num=10000, batch_size=100, lr=0.1,
-        opt_mod='StochasticGradientDescent'):
+def train_neural_net(iter_num=10000, batch_size=100, lr=0.1):
+    u"""
+    Args:
+        iter_num: 総ループ数(int)
+        batch_size: 1エポックあたりのデータ数(int)
+        lr: 学習係数(float)
+    """
     (x_train, t_train), (x_test, t_test) = mnist.load_mnist(one_hot_label=True)
+
+    # 画像枚数
     train_size = x_train.shape[0]
 
     train_loss_list = []
@@ -35,27 +41,38 @@ def train_neural_net(
 
     iter_per_epoch = max(train_size / batch_size, 1)
 
+    # ネットワークの定義
     network = nn.TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
+
+    # パラメータ更新器
     param_optimizer = optimizer.AdaGrad()
 
 
     for i in range(iter_num):
+        # 全データからランダムでバッチサイズ分のデータを得る
         batch_mask = np.random.choice(train_size, batch_size)
         x_batch = x_train[batch_mask]
         t_batch = t_train[batch_mask]
 
+        # 誤差逆伝搬法によって勾配を求める
         grad = network.gradient(x_batch, t_batch)
+
+        # ネットワークの重みを更新する
+        # 参照渡しのため、networkのメンバが更新される
         params = network.params
         param_optimizer.update(params, grad)
 
+        # 順方向の処理を走らせてエラーを得る
         loss = network.loss(x_batch, t_batch)
         train_loss_list.append(loss)
 
+        # エポック毎に精度の確認
         if i % iter_per_epoch == 0:
             train_acc = network.accuracy(x_train, t_train)
             test_acc = network.accuracy(x_test, t_test)
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
-            print(train_acc, test_acc)
+            print('batch num: {0}\n\ttrain_acc: {1}, test_acc:{2}'.format(
+                i / iter_per_epoch, train_acc, test_acc))
 
     return train_loss_list, train_acc_list, test_acc_list
