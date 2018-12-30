@@ -26,20 +26,19 @@ if __name__ == '__main__':
     # 画像枚数
     train_size = x_train.shape[0]
 
+    # ビューア
+    plot_conf = yaml_node['plot']
     acc_plotter = None
     loss_plotter = None
-    weight_plotter = None
-    bias_plotter = None
-
-    if yaml_node['plot']:
+    param_plotter = None
+    if plot_conf['acc']:
         acc_plotter = plot.SimplePlotter(
                 'Accuracy', label=('epoch', 'accuracy[%]'), y_range=(-0.1, 1.1))
+    if plot_conf['loss']:
         loss_plotter = plot.SimplePlotter(
                 'Loss', label=('num', 'loss'), y_range=(-0.1, 1.1))
-        weight_plotter = plot.SimplePlotter(
-                'weight', label=('weight', 'value'), y_range=(-1.0, 1.0))
-        bias_plotter = plot.SimplePlotter(
-                'bias', label=('bias', 'value'), y_range=(-1.0, 1.0))
+    if plot_conf['dnn_params']:
+        param_plotter = plot.NeuralNetworkParamVisualizer(network.params)
 
     train_loss_list = []
     train_acc_list = []
@@ -68,18 +67,8 @@ if __name__ == '__main__':
 
         # エポック毎に精度の確認
         if i % iter_per_epoch == 0:
-            if weight_plotter is not None and loss_plotter is not None:
-                weight_values = []
-                bias_values = []
-                for key in network.params:
-                    for param in network.params[key]:
-                        if type(param) is np.ndarray:
-                            for value in param:
-                                weight_values.append(value)
-                        else:
-                            bias_values.append(param)
-                weight_plotter.plot(weight_values)
-                bias_plotter.plot(bias_values)
+            if param_plotter is not None:
+                param_plotter.plot()
 
             train_acc = network.accuracy(x_train, t_train)
             test_acc = network.accuracy(x_test, t_test)
@@ -88,8 +77,9 @@ if __name__ == '__main__':
             print('batch num: {0}\n\ttrain_acc: {1}, test_acc:{2}'.format(
                 i / iter_per_epoch, train_acc, test_acc))
 
-            if acc_plotter is not None and loss_plotter is not None:
+            if acc_plotter is not None:
                 acc_plotter.plot([train_acc_list, test_acc_list])
+            if loss_plotter is not None:
                 loss_plotter.plot(train_loss_list)
 
     print('Training is done')

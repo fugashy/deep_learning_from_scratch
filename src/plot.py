@@ -36,6 +36,47 @@ class SimplePlotter:
         plt.pause(0.01)
 
 
+class NeuralNetworkParamVisualizer:
+    def __init__(self, params):
+        self.__params = params
+
+        key_num = len(self.__params)
+        print(key_num)
+        cols = 3;
+        if key_num % cols == 0:
+            rows = int(key_num / cols);
+        else:
+            rows = int(key_num / cols) + 1;
+        print(cols, rows)
+
+        self.__fig = plt.figure('Deep neural network parameters', figsize=(12,12))
+
+        self.__axes = {}
+        idx = 1
+        for key in self.__params:
+            print(key)
+            self.__axes[key] = self.__fig.add_subplot(rows, cols, idx)
+            self.__axes[key].set_title(key)
+            idx += 1
+
+    def plot(self, clear=True):
+        all_params = {}
+        for key in self.__params:
+            all_params[key] = []
+            for param in self.__params[key]:
+                if type(param) is np.ndarray:
+                    for value in param:
+                        all_params[key].append(value)
+                else:
+                    all_params[key].append(param)
+        for key in all_params:
+            if clear:
+                self.__axes[key].cla()
+                self.__axes[key].set_title(key)
+            self.__axes[key].plot(all_params[key])
+        plt.pause(0.01)
+
+
 def fx(func, x_max=5., x_min=-5, x_step=0.1, y_max=1.1, y_min=-0.1):
   x = np.arange(x_min, x_max, x_step)
   y = func(x)
