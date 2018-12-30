@@ -72,3 +72,29 @@ def gradient_descent(func, init_x=np.array([-3., -4.]), lr=0.1, step_num=20):
     plt.xlabel("X0")
     plt.ylabel("X1")
     plt.show()
+
+
+class OncePlotter:
+    u"""
+    シンプルな描画クラス
+    画面更新後、すぐに制御を返す
+    """
+    def __init__(self, label=('x', 'y')):
+        u"""
+        Args:
+            name: ウィンドウ名(str)
+            label: ラベル名(tuple of str)
+        """
+        plt.xlabel(label[0])
+        plt.xlabel(label[0])
+
+    def plot_once(self, data):
+        u"""
+        データを描画する
+
+        Args:
+            data: データ(list of value)
+        """
+        plt.cla()
+        plt.plot(data)
+        plt.pause(0.01)

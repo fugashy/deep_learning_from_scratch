@@ -9,6 +9,7 @@ import numpy as np
 import src.mnist as mnist
 import src.nn as nn
 import src.optimizer as optimizer
+import src.plot as plot
 
 import yaml
 
@@ -24,6 +25,9 @@ if __name__ == '__main__':
 
     # 画像枚数
     train_size = x_train.shape[0]
+
+    weight_plotter = plot.OncePlotter(label=('weight', 'value'))
+    bias_plotter = plot.OncePlotter(label=('bias', 'value'))
 
     train_loss_list = []
     train_acc_list = []
@@ -52,6 +56,19 @@ if __name__ == '__main__':
 
         # エポック毎に精度の確認
         if i % iter_per_epoch == 0:
+            if yaml_node['plot']:
+                weight_values = []
+                bias_values = []
+                for key in network.params:
+                    for param in network.params[key]:
+                        if type(param) is np.ndarray:
+                            for value in param:
+                                weight_values.append(value)
+                        else:
+                            bias_values.append(param)
+                weight_plotter.plot_once(weight_values)
+                bias_plotter.plot_once(bias_values)
+
             train_acc = network.accuracy(x_train, t_train)
             test_acc = network.accuracy(x_test, t_test)
             train_acc_list.append(train_acc)
