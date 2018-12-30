@@ -3,27 +3,37 @@ import numpy as np
 import matplotlib.pylab as plt
 import src.differentiation
 
+class SimplePlotter:
+    def __init__(self, name, label=('x', 'y'), y_range=(-0.1, 1.1)):
+        self.__fig = plt.figure(name)
+        self.__ax = self.__fig.add_subplot(1, 1, 1)
 
-def y(ys, y_max=1.1, y_min=-0.1, label=None):
-    if type(ys) is not list:
-        print('input should be list of float')
-        return
-    elif len(ys) == 0:
-        print('input is empty')
-        return
+        self.__label = label
+        self.__y_range = y_range
 
-    if type(ys[0]) is list:
-        for y in ys:
-            plt.plot(y)
-    else:
-        plt.plot(ys)
 
-    plt.ylim(y_min, y_max)
+    def plot(self, ys, clear=True):
+        if type(ys) is not list:
+            print('input should be list of float. {}'.format(type(ys)))
+            return
+        elif len(ys) == 0:
+            print('input is empty')
+            return
 
-    if label is not None and type(label) is tuple:
-        plt.xlabel(label[0])
-        plt.ylabel(label[1])
-    plt.show()
+        if clear:
+            self.__ax.cla()
+
+        self.__ax.set_xlabel(self.__label[0])
+        self.__ax.set_ylabel(self.__label[1])
+        self.__ax.set_ylim(self.__y_range[0], self.__y_range[1])
+
+        if type(ys[0]) is list:
+            for y in ys:
+                self.__ax.plot(y)
+        else:
+            self.__ax.plot(ys)
+
+        plt.pause(0.01)
 
 
 def fx(func, x_max=5., x_min=-5, x_step=0.1, y_max=1.1, y_min=-0.1):
@@ -72,29 +82,3 @@ def gradient_descent(func, init_x=np.array([-3., -4.]), lr=0.1, step_num=20):
     plt.xlabel("X0")
     plt.ylabel("X1")
     plt.show()
-
-
-class OncePlotter:
-    u"""
-    シンプルな描画クラス
-    画面更新後、すぐに制御を返す
-    """
-    def __init__(self, label=('x', 'y')):
-        u"""
-        Args:
-            name: ウィンドウ名(str)
-            label: ラベル名(tuple of str)
-        """
-        plt.xlabel(label[0])
-        plt.xlabel(label[0])
-
-    def plot_once(self, data):
-        u"""
-        データを描画する
-
-        Args:
-            data: データ(list of value)
-        """
-        plt.cla()
-        plt.plot(data)
-        plt.pause(0.01)
