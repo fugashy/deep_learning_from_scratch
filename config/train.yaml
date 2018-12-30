@@ -13,6 +13,8 @@ neural_network:
   weight_init_std: 0.01
   weight_decay_lambda: 0
 
+  with_batch_normalization: True
+
 optimizer:
 # SGD
 # type: sgd

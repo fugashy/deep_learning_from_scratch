@@ -171,7 +171,8 @@ class MultiLayerNet:
     """
     def __init__(
             self, input_size, hidden_size_list, output_size,
-            activation='relu', weight_init_std=0.01, weight_decay_lambda=0):
+            activation='relu', weight_init_std=0.01, weight_decay_lambda=0,
+            with_batch_norm=True):
         u"""
         Args:
             input_size:          入力層の入力要素数(int)
@@ -185,12 +186,14 @@ class MultiLayerNet:
             weight_init_std:     重み初期化時の標準偏差(float or str)
                                  relu or he or sigmoid or xavier or float value
             weight_decay_lambda: Weight Decay(L2ノルム)の強さ(int)
+            with_batch_norm:     BatchNormalizationを行う(bool)
         """
         self.input_size = input_size
         self.output_size = output_size
         self.hidden_size_list = hidden_size_list
         self.hidden_layer_num = len(hidden_size_list)
         self.weight_decay_lambda = weight_decay_lambda
+        self.with_batch_norm = with_batch_norm
 
         self.params = {}
 
@@ -205,6 +208,14 @@ class MultiLayerNet:
             self.layers['Affine' + str(idx)] = \
                     src.layer.Affine(self.params['W' + str(idx)],
                                      self.params['b' + str(idx)])
+            # BatchNormalization
+            if with_batch_norm:
+                # パラメータの数は前層を考慮
+                self.params['gamma' + str(idx)] = np.ones(hidden_size_list[idx-1])
+                self.params['beta' + str(idx)] = np.zeros(hidden_size_list[idx-1])
+
+                self.layers['BatchNorm' + str(idx)] = src.layer.BatchNormalization(
+                        self.params['gamma' + str(idx)], self.params['beta' + str(idx)])
             self.layers['Activation_function' + str(idx)] = \
                     act_layers[activation]()
 
@@ -239,7 +250,6 @@ class MultiLayerNet:
 
             W = np.random.randn(all_size_list[idx - 1], all_size_list[idx])
             self.params['W' + str(idx)] = scale * W
-
             self.params['b' + str(idx)] = np.zeros(all_size_list[idx])
 
     def predict(self, x):
@@ -312,8 +322,14 @@ class MultiLayerNet:
         for idx in range(1, self.hidden_layer_num+2):
             grads['W' + str(idx)] = src.differentiation.numerical_gradient(
                     loss_W, self.params['W' + str(idx)])
+            if self.with_batch_norm and idx != self.hidden_layer_num + 1:
+                grads['gamma' + str(idx)] = numerical_gradient(
+                        loss_W, self.params['gamma' + str(idx)])
+                grads['beta' + str(idx)] = numerical_gradient(
+                        loss_W, self.params['beta' + str(idx)])
             grads['b' + str(idx)] = src.differentiation.numerical_gradient(
                     loss_W, self.params['b' + str(idx)])
+
 
         return grads
 
@@ -349,6 +365,10 @@ class MultiLayerNet:
             grads['W' + str(idx)] = W
             grads['b' + str(idx)] = self.layers['Affine' + str(idx)].db
 
+            if self.with_batch_norm and idx != self.hidden_layer_num+1:
+                grads['gamma' + str(idx)] = self.layers['BatchNorm' + str(idx)].dgamma
+                grads['beta' + str(idx)] = self.layers['BatchNorm' + str(idx)].dbeta
+
         return grads
 
 def create_multilayer_network(config_dict):
@@ -359,10 +379,12 @@ def create_multilayer_network(config_dict):
     activation = config_dict['activation']
     weight_init_std = config_dict['weight_init_std']
     weight_decay_lambda = config_dict['weight_decay_lambda']
+    with_batch_norm = config_dict['with_batch_normalization']
 
     hidden_size_list = [hidden_size for i in range(hidden_layer_num + 1)]
 
     return MultiLayerNet(
             input_size, hidden_size_list, output_size,
             activation=activation, weight_init_std=weight_init_std,
-            weight_decay_lambda=weight_decay_lambda)
+            weight_decay_lambda=weight_decay_lambda,
+            with_batch_norm=with_batch_norm)
