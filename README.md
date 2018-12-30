@@ -23,8 +23,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 # How to use
 
 ```bash
-cd deep_learning_from_scratch
-
+cd /path/to/this/package
 ./script/train
 ```
 

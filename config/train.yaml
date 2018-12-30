@@ -39,4 +39,7 @@ train:
   iter_num: 10000
   batch_size: 100
 
-plot: True
+plot:
+  acc: True
+  loss: True
+  dnn_params: False
