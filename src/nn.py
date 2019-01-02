@@ -198,7 +198,7 @@ class MultiLayerNet:
         self.with_batch_norm = with_batch_norm
         self.with_dropout = with_dropout
 
-        self.params = {}
+        self.params = OrderedDict()
 
         self.__init_weight(weight_init_std)
 

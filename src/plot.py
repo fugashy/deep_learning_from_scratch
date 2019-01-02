@@ -41,20 +41,17 @@ class NeuralNetworkParamVisualizer:
         self.__params = params
 
         key_num = len(self.__params)
-        print(key_num)
         cols = 3;
         if key_num % cols == 0:
             rows = int(key_num / cols);
         else:
             rows = int(key_num / cols) + 1;
-        print(cols, rows)
 
         self.__fig = plt.figure('Deep neural network parameters', figsize=(12,12))
 
         self.__axes = {}
         idx = 1
         for key in self.__params:
-            print(key)
             self.__axes[key] = self.__fig.add_subplot(rows, cols, idx)
             self.__axes[key].set_title(key)
             idx += 1
