@@ -172,7 +172,7 @@ class MultiLayerNet:
     def __init__(
             self, input_size, hidden_size_list, output_size,
             activation='relu', weight_init_std=0.01, weight_decay_lambda=0,
-            with_batch_norm=True):
+            with_batch_norm=True, with_dropout=True, dropout_ratio=0.5):
         u"""
         Args:
             input_size:          入力層の入力要素数(int)
@@ -187,6 +187,8 @@ class MultiLayerNet:
                                  relu or he or sigmoid or xavier or float value
             weight_decay_lambda: Weight Decay(L2ノルム)の強さ(int)
             with_batch_norm:     BatchNormalizationを行う(bool)
+            with_dropout:        Dropoutを用いるかどうか(bool)
+            dropout_ratio:       Dropout設定値(float)
         """
         self.input_size = input_size
         self.output_size = output_size
@@ -194,6 +196,7 @@ class MultiLayerNet:
         self.hidden_layer_num = len(hidden_size_list)
         self.weight_decay_lambda = weight_decay_lambda
         self.with_batch_norm = with_batch_norm
+        self.with_dropout = with_dropout
 
         self.params = {}
 
@@ -216,6 +219,10 @@ class MultiLayerNet:
 
                 self.layers['BatchNorm' + str(idx)] = src.layer.BatchNormalization(
                         self.params['gamma' + str(idx)], self.params['beta' + str(idx)])
+
+            if with_dropout:
+                self.layers['Dropout' + str(idx)] = src.layer.Dropout(dropout_ratio)
+
             self.layers['Activation_function' + str(idx)] = \
                     act_layers[activation]()
 
@@ -371,6 +378,20 @@ class MultiLayerNet:
 
         return grads
 
+    def show_configulations(self):
+        print('Layers')
+        for layer_key in self.layers:
+            print(layer_key)
+            params = self.layers[layer_key].get_description()
+            for param_key in params:
+                print('\t', sep='', end='')
+                print(param_key, params[param_key])
+        print('Output layer')
+        output_layer_params = self.last_layer.get_description()
+        for param_key in output_layer_params:
+            print('\t', sep='', end='')
+            print(param_key, output_layer_params[param_key])
+
 def create_multilayer_network(config_dict):
     input_size = config_dict['input_size']
     output_size = config_dict['output_size']
@@ -380,6 +401,8 @@ def create_multilayer_network(config_dict):
     weight_init_std = config_dict['weight_init_std']
     weight_decay_lambda = config_dict['weight_decay_lambda']
     with_batch_norm = config_dict['with_batch_normalization']
+    with_dropout = config_dict['dropout']['use']
+    dropout_ratio = config_dict['dropout']['ratio']
 
     hidden_size_list = [hidden_size for i in range(hidden_layer_num + 1)]
 
@@ -387,4 +410,5 @@ def create_multilayer_network(config_dict):
             input_size, hidden_size_list, output_size,
             activation=activation, weight_init_std=weight_init_std,
             weight_decay_lambda=weight_decay_lambda,
-            with_batch_norm=with_batch_norm)
+            with_batch_norm=with_batch_norm,
+            with_dropout=with_dropout, dropout_ratio=dropout_ratio)

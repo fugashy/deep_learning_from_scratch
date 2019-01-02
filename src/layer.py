@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import OrderedDict
 import sys, os
 sys.path.append(os.pardir)
 import numpy as np
@@ -98,6 +99,11 @@ class Relu:
 
         return dx
 
+    def get_description(self):
+        desc = OrderedDict()
+        desc['NONE'] = 'Dynamic Configuable'
+        return desc
+
 
 class Sigmoid:
     u"""
@@ -139,6 +145,11 @@ class Sigmoid:
         dx = dout * (1. - self.out) * self.out
 
         return dx
+
+    def get_description(self):
+        desc = OrderedDict()
+        desc['NONE'] = 'Dynamic Configuable'
+        return desc
 
 
 class Affine:
@@ -185,6 +196,12 @@ class Affine:
         self.db = np.sum(dout, axis=0)
 
         return dx
+
+    def get_description(self):
+        desc = OrderedDict()
+        desc['Weight'] = self.W.shape
+        desc['bias'] = self.b.shape
+        return desc
 
 
 class SoftmaxWithLoss:
@@ -233,6 +250,11 @@ class SoftmaxWithLoss:
             dx = dx / batch_size
 
         return dx
+
+    def get_description(self):
+        desc = OrderedDict()
+        desc['NONE'] = 'Dynamic Configuable'
+        return desc
 
 class BatchNormalization:
     def __init__(self,
@@ -315,3 +337,44 @@ class BatchNormalization:
         self.dbeta = dbeta
 
         return dx
+
+    def get_description(self):
+        desc = OrderedDict()
+        desc['gamma'] = ('value: {}'.format(self.gamma[0]), self.gamma.shape)
+        desc['beta'] = ('value: {}'.format(self.beta[0]), self.beta.shape)
+        desc['momentum'] = self.momentum
+        desc['running_mean'] = 'None' if self.running_mean is None else self.running_mean
+        desc['running_var'] = 'None' if self.running_var is None else self.running_var
+
+        return desc
+
+
+class Dropout:
+    u"""
+    ニューロンをランダムに消去しながら学習させるための層
+    効率的な実装はChainerを見ると良い
+    """
+    def __init__(self, dropout_ratio=0.5):
+        self.dropout_ratio = dropout_ratio
+        self.mask = None
+
+    def forward(self, x, train_flg=True):
+        u"""
+        順方向の処理
+        伝搬の都度、消去するニューロンはmaskのFalseとして更新・保持される
+        """
+        if train_flg:
+            # 設定値より大きいものはTrue
+            self.mask = np.random.rand(*x.shape) > self.dropout_ratio
+            return x * self.mask
+        else:
+            return x * (1.0 - self.dropout_ratio)
+
+    def backward(self, dout):
+        return dout * self.mask
+
+    def get_description(self):
+        desc = OrderedDict()
+        desc['ratio'] = self.dropout_ratio
+
+        return desc
