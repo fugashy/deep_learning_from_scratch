@@ -10,9 +10,9 @@ import pickle
 import pathlib
 
 
-def load_mnist(flatten=True, normalize=True, one_hot_label=False):
+def load_mnist(normalize=True, flatten=True, one_hot_label=False):
     (x_train, t_train), (x_test, t_test) = \
-        thirdparty.mnist.load_mnist(flatten, normalize, one_hot_label)
+        thirdparty.mnist.load_mnist(normalize, flatten, one_hot_label)
 
     return (x_train, t_train), (x_test, t_test)
 

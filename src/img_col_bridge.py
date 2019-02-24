@@ -52,7 +52,7 @@ class ImgColBridge:
         col = col.transpose(0, 4, 5, 1, 2, 3).reshape(N*out_h*out_w, -1)
         return col
 
-    def to_img(self, col):
+    def to_img(self, col, shape):
         if self.shape is None:
             raise Exception('Data shape is required.')
 
@@ -75,7 +75,3 @@ class ImgColBridge:
                 img[:, :, y:y_max:self.stride, x:x_max:self.stride] += col[:, :, y, x, :, :]
 
         return img[:, :, self.pad:H + self.pad, self.pad:W + self.pad]
-
-    def to_img(self, col, shape):
-        self.shape = shape
-        return to_img(col)

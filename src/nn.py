@@ -443,15 +443,15 @@ class SimpleCNN:
 
         # レイヤの生成
         self.layers = OrderedDict()
-        self.layers['Conv1'] = Convolution(self.params['W1'], self.params['b1'],
+        self.layers['Conv1'] = src.layer.Convolution(self.params['W1'], self.params['b1'],
                                            conv_param['stride'], conv_param['pad'])
-        self.layers['Relu1'] = Relu()
-        self.layers['Pool1'] = Pooling(pool_h=2, pool_w=2, stride=2)
-        self.layers['Affine1'] = Affine(self.params['W2'], self.params['b2'])
-        self.layers['Relu2'] = Relu()
-        self.layers['Affine2'] = Affine(self.params['W3'], self.params['b3'])
+        self.layers['Relu1'] = src.layer.Relu()
+        self.layers['Pool1'] = src.layer.Pooling(pool_h=2, pool_w=2, stride=2)
+        self.layers['Affine1'] = src.layer.Affine(self.params['W2'], self.params['b2'])
+        self.layers['Relu2'] = src.layer.Relu()
+        self.layers['Affine2'] = src.layer.Affine(self.params['W3'], self.params['b3'])
 
-        self.last_layer = SoftmaxWithLoss()
+        self.last_layer = src.layer.SoftmaxWithLoss()
 
     def predict(self, x):
         for layer in self.layers.values():
@@ -554,3 +554,12 @@ class SimpleCNN:
             self.layers[key].W = self.params['W' + str(i+1)]
             self.layers[key].b = self.params['b' + str(i+1)]
 
+def create_simple_cnn(config_dict):
+    input_dim = tuple(config_dict['input_dim'])
+    conv_param = config_dict['conv_param']
+    hidden_size = config_dict['hidden_size']
+    output_size = config_dict['output_size']
+    weight_init_std = config_dict['weight_init_std']
+
+    return SimpleCNN(
+            input_dim, conv_param, hidden_size, output_size, weight_init_std)
