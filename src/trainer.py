@@ -53,6 +53,12 @@ class Trainer:
         self.__train_acc_list = []
         self.__test_acc_list = []
 
+        print('size of data: {}'.format(self.__x_train.shape[0]))
+        print('size of batch: {}'.format(self.__batch_size))
+        print('number of iteration per epoch: {}'.format(self.__iter_per_epoch))
+        print('number of epoch: {}'.format(self.__epochs))
+        print('number of max_iteration: {}'.format(self.__max_iter))
+
     def train(self):
         u"""
         学習サイクルを回す
@@ -63,11 +69,13 @@ class Trainer:
         for i in range(self.__max_iter):
             self.__one_cycle()
 
+        if self.__verbose:
+            print('\nfinal testing...')
+
         test_acc = self.__network.accuracy(self.__x_test, self.__t_test)
 
         if self.__verbose:
-            print("=============== Final Test Accuracy ===============")
-            print("test acc: {}".format(test_acc))
+            print("final accuracy: {}".format(test_acc))
 
     def __one_cycle(self):
         u"""
