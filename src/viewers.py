@@ -11,13 +11,13 @@ def create(config_dict, params):
     acc_plotter = None
     loss_plotter = None
     param_plotter = None
-    if config_dict['acc']:
+    if 'acc' in config_dict and  config_dict['acc']:
         acc_plotter = plotters.SimplePlotter(
                 'Accuracy', label=('epoch', 'accuracy[%]'), y_range=(-0.1, 1.1))
-    if config_dict['loss']:
+    if 'loss' in config_dict and  config_dict['loss']:
         loss_plotter = plotters.SimplePlotter(
                 'Loss', label=('num', 'loss'), y_range=(-0.1, 1.1))
-    if config_dict['dnn_params']:
+    if 'dnn_params' in config_dict and  config_dict['dnn_params']:
         param_plotter = plotters.NeuralNetworkParamVisualizer(params)
 
     return Viewer(acc_plotter, loss_plotter, param_plotter)

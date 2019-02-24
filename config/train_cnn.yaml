@@ -40,4 +40,3 @@ trainer:
 plot:
   acc: True
   loss: True
-  dnn_params: False
