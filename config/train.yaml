@@ -39,9 +39,12 @@ optimizer:
   beta1: 0.9
   beta2: 0.999
 
-train:
-  iter_num: 10000
-  batch_size: 100
+trainer:
+  epochs: 20
+  mini_batch_size: 100
+  # 0 means the config is disable
+  evaluate_sample_num_per_epoch: 0
+  verbose: True
 
 plot:
   acc: True
