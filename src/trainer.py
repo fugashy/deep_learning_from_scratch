@@ -89,10 +89,13 @@ class Trainer:
         loss = self.__network.loss(x_batch, t_batch)
         self.__train_loss_list.append(loss)
         if self.__verbose:
-            print('Current loss is {}'.format(loss))
+            print('\r[{0}] current loss :{1}'.format(self.__current_iter, loss), end="")
 
         # 1エポック分学習が済んだらテストデータでaccを求める
         if self.__current_iter % self.__iter_per_epoch == 0:
+            if self.__verbose:
+                print('\ntesting...')
+
             self.__current_epoch += 1
 
             x_train_sample, t_train_sample = self.__x_train, self.__t_train
