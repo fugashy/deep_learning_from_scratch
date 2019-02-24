@@ -3,6 +3,7 @@ import sys, os
 from collections import OrderedDict
 sys.path.append(os.pardir)
 import numpy as np
+import pickle
 import src.activation
 import src.differentiation
 import src.loss

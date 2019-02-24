@@ -31,4 +31,14 @@ if __name__ == '__main__':
                               x_train, t_train, x_test, t_test, viewer.view)
 
     trainer.train()
+
+    print('Save model ? [y/N]')
+    user_input = input()
+    input_to_save = ['y', 'yes', 'Yes', 'YES']
+    if user_input in input_to_save:
+        output_filename = '/tmp/params.pkl'
+        network.save_params(output_filename)
+        print('Output model as {}'.format(output_filename))
+
+    print('Hit enter key to exit')
     input()
