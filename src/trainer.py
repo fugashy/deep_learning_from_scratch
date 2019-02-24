@@ -63,7 +63,7 @@ class Trainer:
         for i in range(self.__max_iter):
             self.__one_cycle()
 
-        test_acc = self.__network.accracy(self.__x_test, self.__t_test)
+        test_acc = self.__network.accuracy(self.__x_test, self.__t_test)
 
         if self.__verbose:
             print("=============== Final Test Accuracy ===============")
