@@ -40,5 +40,5 @@ To change parameter edit config/train.yaml or config/train_cnn.yaml
 
 # Results
 
-![acc_vs_epoch](result/acc_vs_epoch.png "acc_vs_epoch")
-![loss_vs_iter_num](result/loss_vs_iter_num.png "loss_vs_iter_num")
+![accuracy](https://github.com/fugashy/deep_learning_from_scratch/blob/images/accuracy.png)
+![loss](https://github.com/fugashy/deep_learning_from_scratch/blob/images/loss.png)
