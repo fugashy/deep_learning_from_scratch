@@ -1,0 +1,40 @@
+neural_network:
+  # MNIST
+  input_dim: [1, 28, 28]
+  conv_param:
+    filter_num: 30
+    filter_size: 5
+    pad: 0
+    stride: 1
+  hidden_size: 100
+  output_size: 10
+  weight_init_std: 0.01
+
+optimizer:
+# SGD
+# type: sgd
+# learning_rate: 0.1
+
+# Momentum SGD
+# type: momentum_sgd
+# learning_rate: 0.1
+# momentum: 0.9
+
+# AdaGrad
+# type: adagrad
+# learning_rate: 0.1
+
+# ADAM
+  type: adam
+  learning_rate: 0.001
+  beta1: 0.9
+  beta2: 0.999
+
+train:
+  iter_num: 10000
+  batch_size: 100
+
+plot:
+  acc: True
+  loss: True
+  dnn_params: False
