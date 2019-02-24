@@ -22,12 +22,23 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 # How to use
 
+## Multi Layer Network
+
 ```bash
 cd /path/to/this/package
 ./script/train
 ```
 
-To change parameter edit config/train.yaml
+## CNN
+
+```bash
+cd /path/to/this/package
+./script/train_cnn
+```
+
+To change parameter edit config/train.yaml or config/train_cnn.yaml
+
+# Results
 
 ![acc_vs_epoch](result/acc_vs_epoch.png "acc_vs_epoch")
 ![loss_vs_iter_num](result/loss_vs_iter_num.png "loss_vs_iter_num")
