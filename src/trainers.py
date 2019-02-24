@@ -66,8 +66,12 @@ class Trainer:
         Returns:
             なし
         """
-        for i in range(self.__max_iter):
-            self.__one_cycle()
+        try:
+            for i in range(self.__max_iter):
+                self.__one_cycle()
+        except KeyboardInterrupt:
+            print('\nforced termination of training')
+            return
 
         if self.__verbose:
             print('\nfinal testing...')
