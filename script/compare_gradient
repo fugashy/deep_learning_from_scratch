@@ -5,8 +5,10 @@ import pathlib
 import numpy as np
 p = pathlib.Path(os.path.dirname(__file__) + '/..')
 sys.path.append(str(p.resolve()))
-import src.mnist as mnist
-import src.nn as nn
+
+from src import (
+    mnist, networks
+)
 
 
 if __name__ == '__main__':
@@ -14,7 +16,7 @@ if __name__ == '__main__':
     x_batch = x_train[:3]
     t_batch = t_train[:3]
 
-    network = nn.TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
+    network = networks.TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
 
     grad_numerical = network.numerical_gradient(x_batch, t_batch)
     grad_backprop = network.gradient(x_batch, t_batch)
@@ -23,5 +25,3 @@ if __name__ == '__main__':
         print(str(np.average(np.abs(grad_backprop[key]))) + ' - ' + str(np.average(np.abs(grad_numerical[key]))))
         diff = np.average(np.abs(grad_backprop[key] - grad_numerical[key]))
         print(key + ':' + str(diff))
-
-

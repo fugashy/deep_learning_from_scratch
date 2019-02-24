@@ -5,20 +5,20 @@ p = pathlib.Path(os.path.dirname(__file__) + '/..')
 root_dir_path = str(p.resolve())
 sys.path.append(root_dir_path)
 
-import src.plot as plot
+from src import plotters
 
 def create(config_dict, params):
     acc_plotter = None
     loss_plotter = None
     param_plotter = None
     if config_dict['acc']:
-        acc_plotter = plot.SimplePlotter(
+        acc_plotter = plotters.SimplePlotter(
                 'Accuracy', label=('epoch', 'accuracy[%]'), y_range=(-0.1, 1.1))
     if config_dict['loss']:
-        loss_plotter = plot.SimplePlotter(
+        loss_plotter = plotters.SimplePlotter(
                 'Loss', label=('num', 'loss'), y_range=(-0.1, 1.1))
     if config_dict['dnn_params']:
-        param_plotter = plot.NeuralNetworkParamVisualizer(params)
+        param_plotter = plotters.NeuralNetworkParamVisualizer(params)
 
     return Viewer(acc_plotter, loss_plotter, param_plotter)
 

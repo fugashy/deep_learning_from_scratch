@@ -3,9 +3,9 @@ from collections import OrderedDict
 import sys, os
 sys.path.append(os.pardir)
 import numpy as np
-import src.activation
-import src.loss
-import src.img_col_bridge
+from src import (
+    activations, losses, img_col_bridge
+)
 
 u"""
 ニューラルネットワークを構成する様々な層の定義
@@ -235,8 +235,8 @@ class SoftmaxWithLoss:
             エラーベクトル(np.array)
         """
         self.t = t
-        self.y = src.activation.softmax(x)
-        self.loss = src.loss.cross_entropy_error(self.y, self.t)
+        self.y = activations.softmax(x)
+        self.loss = losses.cross_entropy_error(self.y, self.t)
 
         return self.loss
 
@@ -392,7 +392,7 @@ class Convolution:
     def __init__(self, W, b, stride=1, pad=0):
         self.W = W
         self.b = b
-        self.bridge = src.img_col_bridge.ImgColBridge(W.shape[2], W.shape[3])
+        self.bridge = img_col_bridge.ImgColBridge(W.shape[2], W.shape[3])
 
         # 中間データ（backward時に使用）
         self.x = None
@@ -440,7 +440,7 @@ class Pooling:
     def __init__(self, pool_h, pool_w, stride=1, pad=0):
         self.pool_h = pool_h
         self.pool_w = pool_w
-        self.bridge = src.img_col_bridge.ImgColBridge(self.pool_h, self.pool_w, stride, pad)
+        self.bridge = img_col_bridge.ImgColBridge(self.pool_h, self.pool_w, stride, pad)
 
         self.x = None
         self.arg_max = None

@@ -4,7 +4,9 @@ import sys, os
 sys.path.append(os.pardir)
 import numpy as np
 import thirdparty.mnist
-import src.nn, src.activation
+from src import (
+    networks, activations
+)
 from PIL import Image
 import pickle
 import pathlib
@@ -37,7 +39,7 @@ def evaluate(batch_num):
     accuracy_cnt = 0
     for i in range(0, len(x_test), batch_num):
         x = x_test[i : i + batch_num]
-        y = src.nn.forward(network, x, src.activation.softmax)
+        y = networks.forward(network, x, activation.softmax)
         p = np.argmax(y, axis=1)
         accuracy_cnt += np.sum(p == t_test[i : i + batch_num])
 

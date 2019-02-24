@@ -4,10 +4,9 @@ from collections import OrderedDict
 sys.path.append(os.pardir)
 import numpy as np
 import pickle
-import src.activation
-import src.differentiation
-import src.loss
-import src.layer
+from src import (
+    activations, differentiations, losses, layers
+)
 
 def init_network():
   network = {}
@@ -26,11 +25,11 @@ def forward(network, x, out_activation):
   b1, b2, b3 = network['b1'], network['b2'], network['b3']
 
   a1 = np.dot(x, W1) + b1
-  z1 = src.activation.sigmoid(a1)
+  z1 = activations.sigmoid(a1)
   a2 = np.dot(z1, W2) + b2
-  z2 = src.activation.sigmoid(a2)
+  z2 = activations.sigmoid(a2)
   a3 = np.dot(z2, W3) + b3
-  y = out_activation(a3)
+  y = out_activations(a3)
 
   return y
 
@@ -44,8 +43,8 @@ class SimpleNet:
 
     def loss(self, x, t):
         z = self.predict(x)
-        y = src.activation.softmax(z)
-        loss = src.loss.cross_entropy_error(y, t)
+        y = activations.softmax(z)
+        loss = losses.cross_entropy_error(y, t)
 
         return loss
 
@@ -61,11 +60,11 @@ class TwoLayerNet:
         self.params['b2'] = np.zeros(output_size)
 
         self.layers = OrderedDict()
-        self.layers['Affine1'] = src.layer.Affine(self.params['W1'], self.params['b1'])
-        self.layers['Relu1'] = src.layer.Relu()
-        self.layers['Affine2'] = src.layer.Affine(self.params['W2'], self.params['b2'])
+        self.layers['Affine1'] = layers.Affine(self.params['W1'], self.params['b1'])
+        self.layers['Relu1'] = layers.Relu()
+        self.layers['Affine2'] = layers.Affine(self.params['W2'], self.params['b2'])
 
-        self.last_layer = src.layer.SoftmaxWithLoss()
+        self.last_layer = layers.SoftmaxWithLoss()
 
 
     def predict(self, x):
@@ -124,13 +123,13 @@ class TwoLayerNet:
         loss_W = lambda W: self.loss(x, t)
 
         grads = {}
-        grads['W1'] = src.differentiation.numerical_gradient(
+        grads['W1'] = differentiations.numerical_gradient(
                 loss_W, self.params['W1'])
-        grads['b1'] = src.differentiation.numerical_gradient(
+        grads['b1'] = differentiations.numerical_gradient(
                 loss_W, self.params['b1'])
-        grads['W2'] = src.differentiation.numerical_gradient(
+        grads['W2'] = differentiations.numerical_gradient(
                 loss_W, self.params['W2'])
-        grads['b2'] = src.differentiation.numerical_gradient(
+        grads['b2'] = differentiations.numerical_gradient(
                 loss_W, self.params['b2'])
 
         return grads
@@ -154,9 +153,9 @@ class TwoLayerNet:
         dout = self.last_layer.backward(dout)
 
         # 層の順番を反転・逆伝搬
-        layers = list(self.layers.values())
-        layers.reverse()
-        for layer in layers:
+        layer_list = list(self.layers.values())
+        layer_list.reverse()
+        for layer in layer_list:
             dout = layer.backward(dout)
 
         # 重み・バイアスの勾配を取り出す
@@ -203,14 +202,14 @@ class MultiLayerNet:
 
         self.__init_weight(weight_init_std)
 
-        act_layers = {'sigmoid': src.layer.Sigmoid,
-                      'relu': src.layer.Relu}
+        act_layers = {'sigmoid': layers.Sigmoid,
+                      'relu': layers.Relu}
         self.layers = OrderedDict()
         # AffineLayerとActivationLayerを隠れ層の数だけ追加する
         for idx in range(1, self.hidden_layer_num + 1):
             # 初期化しておいたパラメータで作る
             self.layers['Affine' + str(idx)] = \
-                    src.layer.Affine(self.params['W' + str(idx)],
+                    layers.Affine(self.params['W' + str(idx)],
                                      self.params['b' + str(idx)])
             # BatchNormalization
             if with_batch_norm:
@@ -218,11 +217,11 @@ class MultiLayerNet:
                 self.params['gamma' + str(idx)] = np.ones(hidden_size_list[idx-1])
                 self.params['beta' + str(idx)] = np.zeros(hidden_size_list[idx-1])
 
-                self.layers['BatchNorm' + str(idx)] = src.layer.BatchNormalization(
+                self.layers['BatchNorm' + str(idx)] = layers.BatchNormalization(
                         self.params['gamma' + str(idx)], self.params['beta' + str(idx)])
 
             if with_dropout:
-                self.layers['Dropout' + str(idx)] = src.layer.Dropout(dropout_ratio)
+                self.layers['Dropout' + str(idx)] = layers.Dropout(dropout_ratio)
 
             self.layers['Activation_function' + str(idx)] = \
                     act_layers[activation]()
@@ -230,11 +229,11 @@ class MultiLayerNet:
         # 出力層の前の層
         idx = self.hidden_layer_num + 1
         self.layers['Affine' + str(idx)] = \
-                src.layer.Affine(self.params['W' + str(idx)],
+                layers.Affine(self.params['W' + str(idx)],
                                  self.params['b' + str(idx)])
 
         # 出力層
-        self.last_layer = src.layer.SoftmaxWithLoss()
+        self.last_layer = layers.SoftmaxWithLoss()
 
     def __init_weight(self, weight_init_std):
         u"""
@@ -328,14 +327,14 @@ class MultiLayerNet:
 
         grads = {}
         for idx in range(1, self.hidden_layer_num+2):
-            grads['W' + str(idx)] = src.differentiation.numerical_gradient(
+            grads['W' + str(idx)] = differentiations.numerical_gradient(
                     loss_W, self.params['W' + str(idx)])
             if self.with_batch_norm and idx != self.hidden_layer_num + 1:
                 grads['gamma' + str(idx)] = numerical_gradient(
                         loss_W, self.params['gamma' + str(idx)])
                 grads['beta' + str(idx)] = numerical_gradient(
                         loss_W, self.params['beta' + str(idx)])
-            grads['b' + str(idx)] = src.differentiation.numerical_gradient(
+            grads['b' + str(idx)] = differentiations.numerical_gradient(
                     loss_W, self.params['b' + str(idx)])
 
 
@@ -360,9 +359,9 @@ class MultiLayerNet:
         dout = self.last_layer.backward(dout)
 
         # 層の順番を反転・逆伝搬
-        layers = list(self.layers.values())
-        layers.reverse()
-        for layer in layers:
+        layer_list = list(self.layers.values())
+        layer_list.reverse()
+        for layer in layer_list:
             dout = layer.backward(dout)
 
         # 重み・バイアスの勾配を取り出す
@@ -444,15 +443,15 @@ class SimpleCNN:
 
         # レイヤの生成
         self.layers = OrderedDict()
-        self.layers['Conv1'] = src.layer.Convolution(self.params['W1'], self.params['b1'],
+        self.layers['Conv1'] = layers.Convolution(self.params['W1'], self.params['b1'],
                                            conv_param['stride'], conv_param['pad'])
-        self.layers['Relu1'] = src.layer.Relu()
-        self.layers['Pool1'] = src.layer.Pooling(pool_h=2, pool_w=2, stride=2)
-        self.layers['Affine1'] = src.layer.Affine(self.params['W2'], self.params['b2'])
-        self.layers['Relu2'] = src.layer.Relu()
-        self.layers['Affine2'] = src.layer.Affine(self.params['W3'], self.params['b3'])
+        self.layers['Relu1'] = layers.Relu()
+        self.layers['Pool1'] = layers.Pooling(pool_h=2, pool_w=2, stride=2)
+        self.layers['Affine1'] = layers.Affine(self.params['W2'], self.params['b2'])
+        self.layers['Relu2'] = layers.Relu()
+        self.layers['Affine2'] = layers.Affine(self.params['W3'], self.params['b3'])
 
-        self.last_layer = src.layer.SoftmaxWithLoss()
+        self.last_layer = layers.SoftmaxWithLoss()
 
     def predict(self, x):
         for layer in self.layers.values():

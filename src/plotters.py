@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
+import sys, os
+import pathlib
+p = pathlib.Path(os.path.dirname(__file__) + '/..')
+root_dir_path = str(p.resolve())
+sys.path.append(root_dir_path)
 import numpy as np
 import matplotlib.pylab as plt
-import src.differentiation
+
+from src import differentiations
 
 class SimplePlotter:
     def __init__(self, name, label=('x', 'y'), y_range=(-0.1, 1.1)):
@@ -93,7 +99,7 @@ def gradient(
     X = X.flatten()
     Y = Y.flatten()
 
-    y = differentiation.numerical_gradient(func, np.array([X, Y]))
+    y = differentiations.numerical_gradient(func, np.array([X, Y]))
 
     plt.figure()
     plt.quiver(X, Y, y[0], y[1],  angles="xy",color="#666666")
@@ -108,7 +114,7 @@ def gradient(
 
 
 def gradient_descent(func, init_x=np.array([-3., -4.]), lr=0.1, step_num=20):
-    x, x_history = differentiation.gradient_descent(
+    x, x_history = differentiations.gradient_descent(
         func, init_x, lr=lr, step_num=step_num)
 
     plt.plot([-5, 5], [0,0], '--b')
