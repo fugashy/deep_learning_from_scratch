@@ -421,23 +421,6 @@ class Convolution:
         self.col_W = col_W
 
         return out
-        FN, _, FH, FW = self.W.shape
-        N, _, H, W = x.shape
-
-        out_h = 1 + int((H + 2*self.bridge.pad - FH) / self.bridge.stride)
-        out_w = 1 + int((W + 2*self.bridge.pad - FW) / self.bridge.stride)
-
-        col = self.bridge.to_col(x)
-        col_W = self.W.reshape(FN, -1).T
-
-        out = np.dot(col, col_W) + self.b
-        out = out.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2)
-
-        self.x = x
-        self.col = col
-        self.col_W = col_W
-
-        return out
 
     def backward(self, dout):
         FN, C, FH, FW = self.W.shape
