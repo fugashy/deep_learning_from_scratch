@@ -6,6 +6,7 @@ p = pathlib.Path(os.path.dirname(__file__) + '/..')
 root_dir_path = str(p.resolve())
 sys.path.append(root_dir_path)
 import numpy as np
+import time
 
 from src import (
     mnist, networks, optimizers, trainers, viewers

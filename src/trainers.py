@@ -4,6 +4,7 @@ import pathlib
 p = pathlib.Path(os.path.dirname(__file__) + '/..')
 root_dir_path = str(p.resolve())
 sys.path.append(root_dir_path)
+import time
 
 import numpy as np
 
@@ -94,6 +95,8 @@ class Trainer:
         t_batch = self.__t_train[batch_mask]
 
         # forward
+        if self.__verbose:
+            start = time.time()
         grads = self.__network.gradient(x_batch, t_batch)
         self.__optimizer.update(self.__network.params, grads)
 
@@ -101,7 +104,9 @@ class Trainer:
         loss = self.__network.loss(x_batch, t_batch)
         self.__train_loss_list.append(loss)
         if self.__verbose:
-            print('\r[{0}] current loss :{1}'.format(self.__current_iter, loss), end="")
+            elapsed_time = time.time() - start
+            print('\r[{0}] current loss :{1}, it takes {2} sec'.format(
+                self.__current_iter, loss, elapsed_time), end="")
 
         # 1エポック分学習が済んだらテストデータでaccを求める
         if self.__current_iter % self.__iter_per_epoch == 0:
