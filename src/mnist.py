@@ -12,7 +12,16 @@ import pickle
 import pathlib
 
 
-def load_mnist(normalize=True, flatten=True, one_hot_label=False):
+def load_mnist(network_config):
+    input_size = network_config['input_size']
+    normalize = True
+    flatten = True
+    one_hot_label = False
+    if type(input_size) is not list:
+        one_hot_label = True
+    else:
+        flatten = False
+
     (x_train, t_train), (x_test, t_test) = \
         thirdparty.mnist.load_mnist(normalize, flatten, one_hot_label)
 

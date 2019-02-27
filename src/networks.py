@@ -8,6 +8,42 @@ from src import (
     activations, differentiations, losses, layers
 )
 
+
+def create(config_dict):
+    network_type = config_dict['type']
+    if network_type == 'multi_layer_network':
+        input_size = config_dict['input_size']
+        output_size = config_dict['output_size']
+        hidden_layer_num = config_dict['hidden_layer_num']
+        hidden_size = config_dict['hidden_size']
+        activation = config_dict['activation']
+        weight_init_std = config_dict['weight_init_std']
+        weight_decay_lambda = config_dict['weight_decay_lambda']
+        with_batch_norm = config_dict['with_batch_normalization']
+        with_dropout = config_dict['dropout']['use']
+        dropout_ratio = config_dict['dropout']['ratio']
+
+        hidden_size_list = [hidden_size for i in range(hidden_layer_num + 1)]
+
+        return MultiLayerNet(
+                input_size, hidden_size_list, output_size,
+                activation=activation, weight_init_std=weight_init_std,
+                weight_decay_lambda=weight_decay_lambda,
+                with_batch_norm=with_batch_norm,
+                with_dropout=with_dropout, dropout_ratio=dropout_ratio)
+    elif network_type == 'simple_cnn':
+        input_dim = tuple(config_dict['input_size'])
+        conv_param = config_dict['conv_param']
+        hidden_size = config_dict['hidden_size']
+        output_size = config_dict['output_size']
+        weight_init_std = config_dict['weight_init_std']
+
+        return SimpleCNN(
+                input_dim, conv_param, hidden_size, output_size, weight_init_std)
+    else:
+        raise Exception('{} is not implemented'.format(network_type))
+
+
 def init_network():
   network = {}
   network['W1'] = np.array([[0.1, 0.3, 0.5], [0.2, 0.4, 0.6]])
@@ -392,26 +428,11 @@ class MultiLayerNet:
             print('\t', sep='', end='')
             print(param_key, output_layer_params[param_key])
 
-def create_multilayer_network(config_dict):
-    input_size = config_dict['input_size']
-    output_size = config_dict['output_size']
-    hidden_layer_num = config_dict['hidden_layer_num']
-    hidden_size = config_dict['hidden_size']
-    activation = config_dict['activation']
-    weight_init_std = config_dict['weight_init_std']
-    weight_decay_lambda = config_dict['weight_decay_lambda']
-    with_batch_norm = config_dict['with_batch_normalization']
-    with_dropout = config_dict['dropout']['use']
-    dropout_ratio = config_dict['dropout']['ratio']
+    def save_params(self, file_name="params.pkl"):
+        print('This function is not implemented')
 
-    hidden_size_list = [hidden_size for i in range(hidden_layer_num + 1)]
-
-    return MultiLayerNet(
-            input_size, hidden_size_list, output_size,
-            activation=activation, weight_init_std=weight_init_std,
-            weight_decay_lambda=weight_decay_lambda,
-            with_batch_norm=with_batch_norm,
-            with_dropout=with_dropout, dropout_ratio=dropout_ratio)
+    def load_params(self, file_name="params.pkl"):
+        print('This function is not implemented')
 
 
 class SimpleCNN:
@@ -553,13 +574,3 @@ class SimpleCNN:
         for i, key in enumerate(['Conv1', 'Affine1', 'Affine2']):
             self.layers[key].W = self.params['W' + str(i+1)]
             self.layers[key].b = self.params['b' + str(i+1)]
-
-def create_simple_cnn(config_dict):
-    input_dim = tuple(config_dict['input_dim'])
-    conv_param = config_dict['conv_param']
-    hidden_size = config_dict['hidden_size']
-    output_size = config_dict['output_size']
-    weight_init_std = config_dict['weight_init_std']
-
-    return SimpleCNN(
-            input_dim, conv_param, hidden_size, output_size, weight_init_std)
