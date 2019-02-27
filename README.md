@@ -22,21 +22,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 # How to use
 
-## Multi Layer Network
-
 ```bash
 cd /path/to/this/package
 ./script/train
 ```
-
-## CNN
-
-```bash
-cd /path/to/this/package
-./script/train_cnn
-```
-
-To change parameter edit config/train.yaml or config/train_cnn.yaml
+To change parameter edit config/train.yaml
 
 # Results
 
